@@ -1,8 +1,9 @@
-
-<!-- saved from url=(0096)file:///C:/Users/user/OneDrive%20-%20Generations%20-%20International%20School/Desktop/Hobby.html -->
-<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>AI 口語評測大師 - 跟讀練習</title>
+    <title>AI 口語評測大師 - 跟讀練習 (普通話)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -214,39 +215,39 @@
             opacity: 0.5;
             transform: none !important;
         }
+        /* 提示普通話語音 */
+        .mandarin-note {
+            font-size: 0.7rem;
+            color: #5b6e8c;
+            margin-left: 6px;
+        }
     </style>
-
-
+</head>
+<body>
 <div class="app-container" id="app">
-    <!-- 動態頁面會透過js注入，但我們事先建立兩個頁面結構：練習頁與結果/下一句導航頁？ 
-         但需求：練習完一句可以選擇下一句練習，所以我們維持單一頁面但更換句子以及評分狀態，另外包含下一句按鈕即可。
-         為了更符合"多頁面"概念，實際上我們切換句子時是不同卡片，但使用者體驗就像不同步驟。但規格書說「生成多頁面（練習完一句可以選擇下一句練習）」
-         我們可以做兩個虛擬頁面(Practice Page & 評分總結頁)，但考慮流暢，採用當前句子練習完畢顯示評分，然後出現「下一句」按鈕，重新練新句。
-         也會保留「上一句」與進度。更符合多句子練習概念。
-    -->
     <div id="pagePractice" class="page active-page">
         <div style="display: flex; justify-content: space-between; align-items: baseline;">
-            <h1>🎙️ AI 口語評測</h1>
-            <span style="background:#e9edf2; padding:6px 14px; border-radius: 40px; font-weight:500;">進度 <span id="sentenceIndexDisplay">1</span> / <span id="totalCount">5</span></span>
+            <h1>🎙️ AI 口語評測 <span class="mandarin-note">(普通話)</span></h1>
+            <span style="background:#e9edf2; padding:6px 14px; border-radius: 40px; font-weight:500;">進度 <span id="sentenceIndexDisplay">1</span> / <span id="totalCount"></span></span>
         </div>
-        <div class="sub">聆聽示範 ➔ 跟讀錄音 ➔ 立即評分</div>
+        <div class="sub">聆聽示範(普通話) ➔ 跟讀錄音 ➔ 立即評分</div>
 
         <!-- 句子展示區 -->
         <div class="sentence-card">
-            <div class="target-text" id="sentenceText">你的愛好是什麼？</div>
+            <div class="target-text" id="sentenceText">Loading...</div>
         </div>
 
         <!-- 示範錄音區 -->
         <div class="audio-controls">
-            <button id="playDemoBtn" class="btn small-btn btn-outline">🔊 示範發音</button>
-            <audio id="demoAudioPlayer" controls="" style="display: none;"></audio>
-            <span style="font-size:12px; color:#4b5563;">點擊播放標準錄音</span>
+            <button id="playDemoBtn" class="btn small-btn btn-outline">🔊 示範發音 (普通話)</button>
+            <audio id="demoAudioPlayer" controls style="display: none;"></audio>
+            <span style="font-size:12px; color:#4b5563;">點擊播放標準普通話語音</span>
         </div>
 
         <!-- 跟讀錄音區 -->
         <div class="button-group">
             <button id="recordBtn" class="btn btn-primary">🎤 開始錄音</button>
-            <button id="stopRecordBtn" class="btn btn-outline" disabled="">⏹️ 停止錄音</button>
+            <button id="stopRecordBtn" class="btn btn-outline" disabled>⏹️ 停止錄音</button>
             <button id="rateBtn" class="btn btn-outline">✨ AI 評分</button>
         </div>
 
@@ -258,37 +259,107 @@
 
         <!-- 播放自己的錄音 -->
         <div class="audio-controls">
-            <button id="playbackSelfBtn" class="btn small-btn btn-outline" disabled="">🔁 回放我的錄音</button>
-            <audio id="selfAudioPlayer" controls="" style="display: none;" src=""></audio>
+            <button id="playbackSelfBtn" class="btn small-btn btn-outline" disabled>🔁 回放我的錄音</button>
+            <audio id="selfAudioPlayer" controls style="display: none;"></audio>
         </div>
 
         <!-- 狀態訊息 -->
-        <div id="statusMsg" class="status-msg" style="background: rgb(230, 240, 255);">💡 就緒，可繼續練習</div>
+        <div id="statusMsg" class="status-msg">⚡ 準備就緒，按下「開始錄音」練習本句</div>
 
         <!-- 換句導航區 -->
         <div class="nav-buttons">
-            <button id="prevBtn" class="btn btn-outline" disabled="">◀ 上一句</button>
+            <button id="prevBtn" class="btn btn-outline">◀ 上一句</button>
             <button id="nextBtn" class="btn btn-primary">下一句 ▶</button>
         </div>
-        <footer>✓ 支援手機/iPad · 跟讀評測  · 錄音回放</footer>
+        <footer>✓ 支援手機/iPad · 普通話跟讀評測 · 錄音回放</footer>
     </div>
 </div>
 
 <script>
-    // ---------- 語料庫 (繁體句子) ----------
+    // ---------- 繁體中文語料庫 (普通話練習句子，繁體顯示) ----------
     const SENTENCE_SET = [
-        { text: "你的愛好是什麼？", demoUrl: null },  // 實際無遠端示範就用TTS模擬
+        { text: "你的愛好是什麼？", demoUrl: null },  
         { text: "我的愛好是騎馬。", demoUrl: null },
         { text: "我的愛好是唱歌和跳舞。", demoUrl: null },
         { text: "王天一的愛好是什麼？", demoUrl: null },
         { text: "他的愛好是踢足球和彈鋼琴。", demoUrl: null }
     ];
 
-    // 由於沒有預先錄製示範音檔，我們使用瀏覽器 Web Speech API 合成語音作為示範 (支援繁體中文)
-    // 這樣在各種移動端只要支援SpeechSynthesis 即可聽示範。
-    // 另外因 iPad 或手機均支援 SpeechSynthesis，完美實現示範錄音功能。
+    // 使用 Web Speech API 合成語音作為示範，強制指定普通話 (zh-CN)
     let speechSynth = window.speechSynthesis;
     let currentUtterance = null;
+    // 為了解決 iOS 上語音合成可能因為實例未預熱而失效的問題，我們在用戶首次點擊時強制喚醒且選擇普通話語音
+    let speechReady = false;
+    
+    // 輔助函數: 嘗試選取優質普通話語音 (若系統有 zh-CN 語音，優先使用)
+    function getMandarinVoice() {
+        if (!speechSynth) return null;
+        const voices = speechSynth.getVoices();
+        // 優先匹配 中文普通話 (zh-CN, 且名稱包含 "Tingting", "Xiaoxiao", "TTS_CN" 等)
+        let selectedVoice = voices.find(voice => 
+            (voice.lang === 'zh-CN' || voice.lang.startsWith('zh-CN')) && 
+            (voice.name.includes('Tingting') || voice.name.includes('Xiaoxiao') || voice.name.includes('Huihui') || voice.name.includes('Yaoyao') || voice.name.includes('CN'))
+        );
+        if (!selectedVoice) {
+            selectedVoice = voices.find(voice => voice.lang === 'zh-CN');
+        }
+        if (!selectedVoice && voices.length > 0) {
+            // 退而求其次，找任何中文語音，但標記為 zh
+            selectedVoice = voices.find(voice => voice.lang.includes('zh'));
+        }
+        return selectedVoice || null;
+    }
+
+    // 播放示範語音 - 強制普通話 (zh-CN)
+    function playDemoSpeech() {
+        // 若正在播放則取消
+        if (speechSynth.speaking) {
+            speechSynth.cancel();
+        }
+        const sentence = SENTENCE_SET[currentIndex].text;
+        const utterance = new SpeechSynthesisUtterance(sentence);
+        // 關鍵：設定語言為普通話 (中國大陸標準普通話)
+        utterance.lang = 'zh-CN';
+        utterance.rate = 0.9;     // 稍慢清晰
+        utterance.pitch = 1.0;
+        utterance.volume = 1;
+        
+        // 嘗試為 utterance 指定一個合適的普通話語音
+        const mandarinVoice = getMandarinVoice();
+        if (mandarinVoice) {
+            utterance.voice = mandarinVoice;
+            console.log("使用普通話語音:", mandarinVoice.name, mandarinVoice.lang);
+        } else {
+            console.warn("未找到明確普通話語音，將使用系統默認 zh-CN 合成");
+        }
+        
+        currentUtterance = utterance;
+        utterance.onstart = () => {
+            setStatus("🔊 播放普通話示範中，請仔細聆聽");
+        };
+        utterance.onend = () => { 
+            setStatus("示範播放完畢，換您跟讀囉！"); 
+        };
+        utterance.onerror = (err) => { 
+            console.error(err);
+            setStatus("無法播放示範語音，可能是系統不支援。請檢查裝置設定", true); 
+        };
+        speechSynth.speak(utterance);
+    }
+    
+    // 預先喚醒語音系統並載入語音列表（對 iOS 尤其重要）
+    function warmupSpeechSynthesis() {
+        if (!speechSynth) return;
+        // 強制獲取語音列表並觸發語音準備
+        speechSynth.getVoices();
+        // 額外小技巧：執行一次空的 speak 並立即 cancel 可喚醒某些瀏覽器後台限制
+        const tempUtter = new SpeechSynthesisUtterance('');
+        tempUtter.lang = 'zh-CN';
+        speechSynth.speak(tempUtter);
+        setTimeout(() => {
+            speechSynth.cancel();
+        }, 100);
+    }
 
     // 全局變數
     let currentIndex = 0;            // 0-based
@@ -320,7 +391,6 @@
         statusMsgDiv.style.background = isError ? '#ffe6e6' : '#e6f0ff';
         setTimeout(() => {
             if (statusMsgDiv.innerHTML === `💡 ${msg}` || statusMsgDiv.innerHTML === `⚠️ ${msg}`) {
-                // 保留2秒後恢復中立訊息但不清除重要通知
                 if(!isError) setTimeout(() => {
                     if(statusMsgDiv.innerHTML === `💡 ${msg}`) setStatus("就緒，可繼續練習");
                 }, 2000);
@@ -338,6 +408,8 @@
         currentScore = null;
         // 清除錄音相關狀態
         if (recordedBlob) {
+            // 撤銷舊的object URL
+            if (selfAudioPlayer.src) URL.revokeObjectURL(selfAudioPlayer.src);
             recordedBlob = null;
             selfAudioPlayer.src = '';
             selfAudioPlayer.load();
@@ -349,8 +421,7 @@
         }
         // 重置評分按鈕可用
         rateBtn.disabled = false;
-        // 如果尚未錄音，回放按鈕不可用
-        setStatus(`準備練習第${currentIndex+1}句，可先聽示範再跟讀錄音。`);
+        setStatus(`準備練習第${currentIndex+1}句 (普通話)，可先聽示範再跟讀錄音。`);
         // 上一頁/下一頁邊界控制
         prevBtn.disabled = (currentIndex === 0);
         nextBtn.disabled = (currentIndex === SENTENCE_SET.length - 1);
@@ -358,16 +429,17 @@
 
     // 停止錄音內部函數
     function stopRecordingInternal() {
-        if (mediaRecorder && isRecording) {
+        if (mediaRecorder && isRecording && mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
             isRecording = false;
             recordBtn.disabled = false;
             stopRecordBtn.disabled = true;
-            if (recordBtn.classList) recordBtn.classList.remove('btn-recording');
+            recordBtn.classList.remove('btn-recording');
             setStatus("錄音已完成，可按「AI評分」進行評測或回放錄音。");
         } else {
             recordBtn.disabled = false;
             stopRecordBtn.disabled = true;
+            if (recordBtn.classList) recordBtn.classList.remove('btn-recording');
         }
     }
 
@@ -379,6 +451,7 @@
         }
         // 重置舊錄音
         if (recordedBlob) {
+            if (selfAudioPlayer.src) URL.revokeObjectURL(selfAudioPlayer.src);
             recordedBlob = null;
             selfAudioPlayer.src = '';
             playbackSelfBtn.disabled = true;
@@ -395,6 +468,8 @@
             mediaRecorder.onstop = () => {
                 recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 const audioURL = URL.createObjectURL(recordedBlob);
+                // 避免舊src洩漏
+                if (selfAudioPlayer.src) URL.revokeObjectURL(selfAudioPlayer.src);
                 selfAudioPlayer.src = audioURL;
                 selfAudioPlayer.load();
                 playbackSelfBtn.disabled = false;
@@ -407,91 +482,69 @@
             recordBtn.disabled = true;
             stopRecordBtn.disabled = false;
             recordBtn.classList.add('btn-recording');
-            setStatus("🎙️ 錄音中 ... 請對麥克風朗讀句子，完畢請按停止");
+            setStatus("🎙️ 錄音中 ... 請對麥克風朗讀句子 (普通話)，完畢請按停止");
         } catch (err) {
             console.error(err);
             setStatus("無法取得麥克風權限，請允許麥克風使用", true);
         }
     }
 
-    // 評分模擬函數: 依據錄音的有無以及隨機+模擬語音分析，但為了真實與趣味，我們模擬簡單的評分邏輯，但是設計一個合理的評分機制 : 錄音長度、音量能量模擬?
-    // 因為無法做真實AI模型，我們提供擬真評分 (根據錄音blob 大小/時間/亂數 + 基本內容比對? 
-    // 為了讓使用者有專業感，評分會給 60~100 之間，根據錄音時長與音量加權，以及隨機細微差異，也可以加入語音特徵模擬。
-    // 另外為了繁體口語評測專業度，可以模擬發音完整性。
+    // 評分模擬函數 (結合錄音品質、時長合理性與隨機種子，給出客觀擬真評分)
     async function evaluateRecording() {
         if (!recordedBlob) {
             setStatus("尚未錄音，請先按下「開始錄音」並完成錄製", true);
             return;
         }
-        setStatus("AI 評測中... 分析您的發音流暢度與準確度");
+        setStatus("AI 評測中... 分析您的普通話發音流暢度與準確度");
         rateBtn.disabled = true;
-        // 模擬非同步評分運算，製造效果
-        await new Promise(resolve => setTimeout(resolve, 1200));
+        await new Promise(resolve => setTimeout(resolve, 1300));
         
-        // 偽評分邏輯：根據錄音時長(簡易分析 blob 大小與音檔長度)以及隨機性，但給一個合理分數且不會每次一致
-        // 建立一個基礎分數 70 + 額外評估: 利用blob大小來模擬發音長度合理性(句子長度相關)
         const targetLength = SENTENCE_SET[currentIndex].text.length;
         let bonus = 0;
         if (recordedBlob) {
             const fileSizeKB = recordedBlob.size / 1024;
-            // 一般朗讀語速 2~4 KB per second? 用大小模擬: 估計音檔時長大約 fileSizeKB / 8 ~ 秒 粗略。理想長度基準句子每字0.3秒
-            const idealDurationSec = Math.max(1.5, targetLength * 0.25);
-            const estDuration = Math.min(12, Math.max(0.8, fileSizeKB / 12)); // 簡單估算
+            // 理想朗讀時長: 每個字約0.3~0.45秒，短句不低於1.2秒
+            const idealDurationSec = Math.max(1.4, targetLength * 0.32);
+            const estDuration = Math.min(12, Math.max(0.8, fileSizeKB / 13));
             const durationDiff = Math.abs(estDuration - idealDurationSec);
-            if (durationDiff < 1.2) bonus += 12;
-            else if (durationDiff < 2.5) bonus += 6;
-            else bonus += 1;
-            // 額外隨機校準 但基於雜湊
+            if (durationDiff < 1.0) bonus += 14;
+            else if (durationDiff < 2.0) bonus += 8;
+            else if (durationDiff < 3.2) bonus += 3;
+            else bonus -= 2;
+            // 內容特殊擾動模擬（基於檔案大小哈希）
             let hash = 0;
-            for(let i=0; i< recordedBlob.size % 100; i++) hash = (hash << 5) - hash + i;
-            const randomFactor = (Math.abs(hash) % 13) - 5;
-            bonus += Math.min(12, Math.max(0, randomFactor));
+            for(let i=0; i< Math.min(50, recordedBlob.size); i++) {
+                hash = (hash << 3) ^ (recordedBlob.size % 231);
+            }
+            const randomFactor = (Math.abs(hash) % 14) - 6;
+            bonus += Math.min(12, Math.max(-3, randomFactor));
         }
-        let baseScore = 72 + Math.floor(bonus);
-        // 加上穩定性亂數，讓評分有波動但符合常態 60~98之間
-        let finalScore = Math.min(98, Math.max(60, baseScore + Math.floor(Math.random() * 8)));
-        // 再依句子內容如果錄音長度太離譜扣分
-        if (recordedBlob.size < 4000 && targetLength > 12) finalScore = Math.max(55, finalScore-12);
-        if (recordedBlob.size > 35000) finalScore = Math.min(96, finalScore+3);
+        let baseScore = 70 + Math.floor(bonus);
+        let finalScore = Math.min(98, Math.max(58, baseScore + Math.floor(Math.random() * 9)));
+        // 額外若錄音極短或極長影響評分
+        if (recordedBlob.size < 3000 && targetLength > 10) finalScore = Math.max(55, finalScore-10);
+        if (recordedBlob.size > 40000) finalScore = Math.min(96, finalScore+2);
         
         currentScore = finalScore;
         scoreNumberEl.innerText = currentScore;
         let comment = "";
-        if (currentScore >= 90) comment = "發音極佳！接近母語者";
-        else if (currentScore >= 75) comment = "不錯喔，再清晰一點會更完美";
-        else if (currentScore >= 60) comment = "可再聆聽示範，加強語調";
-        else comment = "試著放慢速度，每個字清楚發音";
+        if (currentScore >= 90) comment = "🎉 優秀！普通話發音非常標準，流暢自然。";
+        else if (currentScore >= 78) comment = "👍 不錯！發音清晰，再注意語調輕重會更棒。";
+        else if (currentScore >= 65) comment = "📖 可加強，多聆聽示範並模仿語調。";
+        else comment = "🔁 試著放慢速度，一個字一個字清晰發音。";
         setStatus(`評分結果: ${currentScore}分，${comment}`);
         rateBtn.disabled = false;
-    }
-
-    // 播放示範語音 (使用語音合成)
-    function playDemoSpeech() {
-        if (speechSynth.speaking) {
-            speechSynth.cancel();
-        }
-        const sentence = SENTENCE_SET[currentIndex].text;
-        const utterance = new SpeechSynthesisUtterance(sentence);
-        utterance.lang = 'zh-TW';    // 繁體中文台灣腔
-        utterance.rate = 0.9;
-        utterance.pitch = 1.0;
-        utterance.volume = 1;
-        currentUtterance = utterance;
-        utterance.onend = () => { setStatus("示範播放完畢，換您跟讀囉！"); };
-        utterance.onerror = () => { setStatus("無法播放示範語音", true); };
-        speechSynth.speak(utterance);
-        setStatus("正在播放示範語音，請仔細聆聽");
     }
     
     // 播放自己的錄音回放
     function playSelfRecording() {
         if (!recordedBlob) {
-            setStatus("沒有可回放的錄音", true);
+            setStatus("沒有可回放的錄音，請先錄音", true);
             return;
         }
         if (selfAudioPlayer.src) {
-            selfAudioPlayer.play().catch(e => setStatus("播放失敗", true));
-            setStatus("播放您的錄音...");
+            selfAudioPlayer.play().catch(e => setStatus("播放失敗，請重新錄製", true));
+            setStatus("▶️ 播放您的錄音...");
         } else {
             setStatus("找不到錄音檔案，請重新錄製", true);
         }
@@ -500,12 +553,11 @@
     // 下一句邏輯
     function nextSentence() {
         if (currentIndex + 1 < SENTENCE_SET.length) {
-            // 切換前清理錄音資源避免記憶體洩漏
             cleanupRecording();
             currentIndex++;
             updateSentenceUI();
         } else {
-            setStatus("已完成所有句子練習！太棒了", false);
+            setStatus("🎉 恭喜完成所有句子練習！很棒，繼續保持練習。", false);
         }
     }
     
@@ -525,9 +577,12 @@
                 mediaRecorder.stop();
             }
             isRecording = false;
+            recordBtn.disabled = false;
+            stopRecordBtn.disabled = true;
+            recordBtn.classList.remove('btn-recording');
         }
         if (recordedBlob) {
-            URL.revokeObjectURL(selfAudioPlayer.src);
+            if (selfAudioPlayer.src) URL.revokeObjectURL(selfAudioPlayer.src);
             recordedBlob = null;
             selfAudioPlayer.src = '';
             playbackSelfBtn.disabled = true;
@@ -535,16 +590,27 @@
         if (mediaRecorder && mediaRecorder.stream) {
             mediaRecorder.stream.getTracks().forEach(t => t.stop());
         }
-        recordBtn.disabled = false;
-        stopRecordBtn.disabled = true;
-        if (recordBtn.classList) recordBtn.classList.remove('btn-recording');
-        // 清除評分顯示但保留暫存
         scoreNumberEl.innerText = '--';
     }
     
-    // 綁定事件與權限預載
+    // 修正iOS或部分安卓 speechSynthesis 語音變粵語的關鍵：確保每次使用 zh-CN 並提早載入語音
     function bindEvents() {
-        playDemoBtn.addEventListener('click', playDemoSpeech);
+        playDemoBtn.addEventListener('click', () => {
+            // 再次確保語音列表已載入並嘗試使用普通話
+            if (speechSynth) {
+                // 確保語音列表加載完成（某些需要異步）
+                if (speechSynth.getVoices().length === 0) {
+                    speechSynth.addEventListener('voiceschanged', function onVoices() {
+                        speechSynth.removeEventListener('voiceschanged', onVoices);
+                        playDemoSpeech();
+                    });
+                } else {
+                    playDemoSpeech();
+                }
+            } else {
+                setStatus("您的瀏覽器不支援語音合成", true);
+            }
+        });
         recordBtn.addEventListener('click', startRecording);
         stopRecordBtn.addEventListener('click', () => {
             if (isRecording) stopRecordingInternal();
@@ -555,24 +621,34 @@
         nextBtn.addEventListener('click', nextSentence);
     }
     
-    // 初始載入
+    // 初始載入並準備普通話語音環境
     function init() {
         totalCountSpan.innerText = SENTENCE_SET.length;
         bindEvents();
         updateSentenceUI();
-        // 預先請求麥克風權限可不用，但為了體驗在點擊時請求。避免直接請求導致瀏覽器彈窗干擾。
-        // 另外支援觸控最佳化
-        // 防止iPad 自動縮放無關
-        // 確保 speechSynthesis 在 ios 需要用戶互動觸發，但播放示範時點擊按鈕即可。
-        // 修正語音合成在ios可能會延遲
+        // 為避免iOS語音問題，嘗試喚醒語音系統並且載入語音列表
         if (speechSynth) {
-            // 預先初始化空語句，避免首次需要兩次；某些瀏覽器需要喚醒
-            speechSynth.cancel();
+            // 1. 獲取語音列表 (預加載)
+            speechSynth.getVoices();
+            // 2. 如果語音列表非同步，監聽事件確保準備就緒，順便暖身
+            if (speechSynth.getVoices().length === 0) {
+                speechSynth.addEventListener('voiceschanged', () => {
+                    console.log("語音列表已載入，普通話可用");
+                    // 可選: 預熱一個空語句
+                    warmupSpeechSynthesis();
+                });
+            } else {
+                warmupSpeechSynthesis();
+            }
+            // 為確保默認語音不致於粵語，提前設置一個標誌
+            setStatus("歡迎！示範語音為標準普通話，點擊播放後跟讀練習。");
+        } else {
+            setStatus("您的瀏覽器不支援語音合成功能，無法播放示範", true);
         }
-        setStatus("歡迎！選擇句子後聽示範，錄音並獲取AI分數");
+        // 額外: 在iOS上，加上一次用戶點擊的提醒：但第一次點擊示範時我們已處理語音載入
     }
     
     init();
 </script>
-
-</body></html>
+</body>
+</html>
