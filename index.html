@@ -195,63 +195,86 @@
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
 
-    // ---------- 🔥 核心修正：強制手機使用普通話語音 ----------
+    // ---------- 🔥 最终修复：强制手机永远说普通话 ----------
     let speechSynth = window.speechSynthesis;
     let cachedMandarinVoice = null;
-
-    // 取得系統中「真正的普通話」語音 (優先 Tingting / Xiaoxiao / 任何 zh-CN)
+    
+    // 强制获取普通话（无视系统语言）
     function getMandarinVoice() {
-        return new Promise((resolve) => {
-            if (!speechSynth) return resolve(null);
-            const voices = speechSynth.getVoices();
-            if (voices.length > 0) {
-                // 篩選語音：優先 zh-CN 且名稱包含常見普通話關鍵字
-                let voice = voices.find(v => 
-                    (v.lang === 'zh-CN' && (v.name.includes('Tingting') || v.name.includes('Xiaoxiao') || v.name.includes('Huihui') || v.name.includes('Yaoyao')))
-                );
-                if (!voice) voice = voices.find(v => v.lang === 'zh-CN');
-                if (!voice) voice = voices.find(v => v.lang.includes('CN'));
-                if (!voice && voices.length > 0) voice = voices[0]; // 最後退路
-                resolve(voice);
-            } else {
-                // 語音列表尚未載入，等待事件
-                speechSynth.addEventListener('voiceschanged', function onVoices() {
-                    const newVoices = speechSynth.getVoices();
-                    let v = newVoices.find(v => v.lang === 'zh-CN' && (v.name.includes('Tingting') || v.name.includes('Xiaoxiao')));
-                    if (!v) v = newVoices.find(v => v.lang === 'zh-CN');
-                    if (!v) v = newVoices.find(v => v.lang.includes('CN'));
-                    resolve(v);
-                    speechSynth.removeEventListener('voiceschanged', onVoices);
-                });
-            }
-        });
+      return new Promise((resolve) => {
+        const voices = speechSynth.getVoices();
+    
+        if (voices.length) {
+          resolve(findCNVoice(voices));
+          return;
+        }
+    
+        // 等待语音加载
+        const onVoicesChange = () => {
+          resolve(findCNVoice(speechSynth.getVoices()));
+          speechSynth.removeEventListener('voiceschanged', onVoicesChange);
+        };
+        speechSynth.addEventListener('voiceschanged', onVoicesChange);
+      });
     }
-
-    // 播放示範 - 絕對普通話
+    
+    // 核心：严格匹配普通话 zh-CN，绝对不碰 zh-HK / zh-TW
+    function findCNVoice(voices) {
+      let voice = voices.find(v =>
+        v.lang === 'zh-CN' &&
+        !v.name.includes('HK') &&
+        !v.name.includes('Taiwan') &&
+        (v.name.includes('Tingting') || v.name.includes('Xiaoxiao') || v.name.includes('Huihui') || v.name.includes('Yaoyao'))
+      );
+      if (!voice) voice = voices.find(v => v.lang === 'zh-CN');
+      return voice || null;
+    }
+    
+    // 播放示范（强制普通话，解决iOS粤语问题）
     async function playDemoSpeech() {
+      try {
         if (speechSynth.speaking) speechSynth.cancel();
-        
+    
         const sentence = SENTENCE_SET[currentIndex].text;
         const utterance = new SpeechSynthesisUtterance(sentence);
-        utterance.lang = 'zh-CN';      // 普通話代碼
+    
+        // ✅ 关键 1：强制语言
+        utterance.lang = 'zh-CN';
         utterance.rate = 0.9;
-        utterance.pitch = 1.0;
-        
-        // 強制使用緩存的普通話語音 (若尚未取得則等待)
+        utterance.pitch = 1;
+        utterance.volume = 1;
+    
+        // ✅ 关键 2：等待并绑定普通话语音
         if (!cachedMandarinVoice) {
-            cachedMandarinVoice = await getMandarinVoice();
+          cachedMandarinVoice = await getMandarinVoice();
         }
+    
         if (cachedMandarinVoice) {
-            utterance.voice = cachedMandarinVoice;
-            console.log("✅ 使用普通話語音:", cachedMandarinVoice.name, cachedMandarinVoice.lang);
+          utterance.voice = cachedMandarinVoice;
+          console.log("✅ 使用普通话：", cachedMandarinVoice.name, cachedMandarinVoice.lang);
         } else {
-            console.warn("⚠️ 未找到普通話語音，使用系統預設");
+          console.warn("⚠️ 无普通话语音包");
         }
-        
-        utterance.onstart = () => setStatus("🔊 播放普通話示範中");
-        utterance.onend = () => setStatus("示範結束，請開始跟讀錄音");
-        utterance.onerror = () => setStatus("語音播放失敗", true);
-        speechSynth.speak(utterance);
+    
+        // ✅ 关键 3：iOS 必须重新创建一次 utterance 才能生效（这是你之前失败的真正原因！）
+        const fixedUtterance = new SpeechSynthesisUtterance(utterance.text);
+        fixedUtterance.lang = utterance.lang;
+        fixedUtterance.rate = utterance.rate;
+        fixedUtterance.pitch = utterance.pitch;
+        fixedUtterance.voice = utterance.voice;
+    
+        fixedUtterance.onstart = () => setStatus("🔊 播放普通话示范中");
+        fixedUtterance.onend = () => setStatus("示范结束，请开始跟读");
+        fixedUtterance.onerror = (e) => {
+          console.error(e);
+          setStatus("语音播放失败", true);
+        };
+    
+        speechSynth.speak(fixedUtterance);
+    
+      } catch (e) {
+        console.error("播放失败", e);
+      }
     }
 
     // 預熱語音，解決手機語音延遲
